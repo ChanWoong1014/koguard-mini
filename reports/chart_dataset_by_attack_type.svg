@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="470" viewBox="0 0 920 470">
+<rect width="100%" height="100%" fill="#ffffff"/>
+<text x="24" y="32" font-family="Arial, sans-serif" font-size="20" font-weight="700" fill="#111827">Dataset Rows by Attack Type</text>
+<text x="24" y="73" font-family="Arial, sans-serif" font-size="13" fill="#374151">benign</text>
+<rect x="250" y="56" width="550" height="24" rx="4" fill="#e5e7eb"/>
+<rect x="250" y="56" width="550" height="24" rx="4" fill="#2563eb"/>
+<text x="816" y="73" font-family="Arial, sans-serif" font-size="13" fill="#111827">100.00</text>
+<text x="24" y="107" font-family="Arial, sans-serif" font-size="13" fill="#374151">instruction_override</text>
+<rect x="250" y="90" width="550" height="24" rx="4" fill="#e5e7eb"/>
+<rect x="250" y="90" width="77" height="24" rx="4" fill="#2563eb"/>
+<text x="816" y="107" font-family="Arial, sans-serif" font-size="13" fill="#111827">14.00</text>
+<text x="24" y="141" font-family="Arial, sans-serif" font-size="13" fill="#374151">roleplay</text>
+<rect x="250" y="124" width="550" height="24" rx="4" fill="#e5e7eb"/>
+<rect x="250" y="124" width="44" height="24" rx="4" fill="#2563eb"/>
+<text x="816" y="141" font-family="Arial, sans-serif" font-size="13" fill="#111827">8.00</text>
+<text x="24" y="175" font-family="Arial, sans-serif" font-size="13" fill="#374151">translation_bypass</text>
+<rect x="250" y="158" width="550" height="24" rx="4" fill="#e5e7eb"/>
+<rect x="250" y="158" width="44" height="24" rx="4" fill="#2563eb"/>
+<text x="816" y="175" font-family="Arial, sans-serif" font-size="13" fill="#111827">8.00</text>
+<text x="24" y="209" font-family="Arial, sans-serif" font-size="13" fill="#374151">policy_removal</text>
+<rect x="250" y="192" width="550" height="24" rx="4" fill="#e5e7eb"/>
+<rect x="250" y="192" width="66" height="24" rx="4" fill="#2563eb"/>
+<text x="816" y="209" font-family="Arial, sans-serif" font-size="13" fill="#111827">12.00</text>
+<text x="24" y="243" font-family="Arial, sans-serif" font-size="13" fill="#374151">filter_disable</text>
+<rect x="250" y="226" width="550" height="24" rx="4" fill="#e5e7eb"/>
+<rect x="250" y="226" width="44" height="24" rx="4" fill="#2563eb"/>
+<text x="816" y="243" font-family="Arial, sans-serif" font-size="13" fill="#111827">8.00</text>
+<text x="24" y="277" font-family="Arial, sans-serif" font-size="13" fill="#374151">privacy</text>
+<rect x="250" y="260" width="550" height="24" rx="4" fill="#e5e7eb"/>
+<rect x="250" y="260" width="55" height="24" rx="4" fill="#2563eb"/>
+<text x="816" y="277" font-family="Arial, sans-serif" font-size="13" fill="#111827">10.00</text>
+<text x="24" y="311" font-family="Arial, sans-serif" font-size="13" fill="#374151">obfuscation</text>
+<rect x="250" y="294" width="550" height="24" rx="4" fill="#e5e7eb"/>
+<rect x="250" y="294" width="55" height="24" rx="4" fill="#2563eb"/>
+<text x="816" y="311" font-family="Arial, sans-serif" font-size="13" fill="#111827">10.00</text>
+<text x="24" y="345" font-family="Arial, sans-serif" font-size="13" fill="#374151">prompt_leakage</text>
+<rect x="250" y="328" width="550" height="24" rx="4" fill="#e5e7eb"/>
+<rect x="250" y="328" width="55" height="24" rx="4" fill="#2563eb"/>
+<text x="816" y="345" font-family="Arial, sans-serif" font-size="13" fill="#111827">10.00</text>
+<text x="24" y="379" font-family="Arial, sans-serif" font-size="13" fill="#374151">tool_misuse</text>
+<rect x="250" y="362" width="550" height="24" rx="4" fill="#e5e7eb"/>
+<rect x="250" y="362" width="55" height="24" rx="4" fill="#2563eb"/>
+<text x="816" y="379" font-family="Arial, sans-serif" font-size="13" fill="#111827">10.00</text>
+<text x="24" y="413" font-family="Arial, sans-serif" font-size="13" fill="#374151">authority_impersonation</text>
+<rect x="250" y="396" width="550" height="24" rx="4" fill="#e5e7eb"/>
+<rect x="250" y="396" width="55" height="24" rx="4" fill="#2563eb"/>
+<text x="816" y="413" font-family="Arial, sans-serif" font-size="13" fill="#111827">10.00</text>
+</svg>

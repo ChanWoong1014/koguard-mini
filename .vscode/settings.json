@@ -1,0 +1,8 @@
+{
+  "files.encoding": "utf8",
+  "editor.rulers": [100],
+  "python.analysis.typeCheckingMode": "basic",
+  "python.testing.unittestEnabled": true,
+  "python.testing.pytestEnabled": false,
+  "python.testing.unittestArgs": ["-v", "-s", "tests", "-p", "test_*.py"]
+}

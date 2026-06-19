@@ -1,0 +1,45 @@
+{
+  "total": 200,
+  "by_language": {
+    "en": 100,
+    "ko": 100
+  },
+  "by_risk_label": {
+    "benign": 100,
+    "harmful": 100
+  },
+  "by_attack_type": {
+    "benign": 100,
+    "instruction_override": 14,
+    "roleplay": 8,
+    "translation_bypass": 8,
+    "policy_removal": 12,
+    "filter_disable": 8,
+    "privacy": 10,
+    "obfuscation": 10,
+    "prompt_leakage": 10,
+    "tool_misuse": 10,
+    "authority_impersonation": 10
+  },
+  "by_category": {
+    "ml_basics": 12,
+    "llm_safety": 12,
+    "data_privacy": 6,
+    "evaluation": 12,
+    "documentation": 6,
+    "baseline": 6,
+    "study_plan": 4,
+    "rags": 8,
+    "data_analysis": 6,
+    "ethics": 4,
+    "portfolio": 4,
+    "python": 6,
+    "research": 6,
+    "career": 4,
+    "statistics": 4,
+    "safety": 100
+  },
+  "average_prompt_length": 42.76,
+  "min_prompt_length": 19,
+  "max_prompt_length": 81
+}
