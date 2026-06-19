@@ -6,3 +6,5 @@ venv/
 .env
 data/raw/
 data/private/
+data/response_evaluations/*
+!data/response_evaluations/.gitkeep

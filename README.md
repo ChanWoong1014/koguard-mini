@@ -18,6 +18,9 @@ KoGuard-Mini는 한국어/영어 LLM 프롬프트가 정상 요청인지, 아니
 - Confusion matrix export: `src/confusion_matrix.py`
 - Full pipeline: `src/run_pipeline.py`
 - Response-level evaluation plan: `docs/RESPONSE_LEVEL_EVALUATION_PLAN.md`
+- Response pilot builder: `src/prepare_response_pilot.py`
+- Response metrics evaluator: `src/evaluate_response_level.py`
+- OpenAI response collector: `src/collect_openai_responses.py`
 
 ## 데이터셋
 
@@ -156,6 +159,64 @@ OK
 - `reports/experiment_report_ko.md`: 한국어 실험 보고서 초안
 - `docs/RESPONSE_LEVEL_EVALUATION_PLAN.md`: 실제 LLM 응답 평가 설계 문서
 - `data/response_eval_template.csv`: response-level labeling 템플릿
+
+## 실제 LLM 응답 평가: 20개 파일럿
+
+현재의 600개/80개 실험은 **프롬프트 문장 자체를 분류**한 결과다. 실제 LLM이 위험한 요청을 제대로 거절하는지 보려면 별도의 response-level 평가가 필요하다.
+
+먼저 challenge set에서 언어와 프롬프트 위험 라벨이 균형 잡힌 20개를 뽑는다.
+
+```powershell
+python src\prepare_response_pilot.py --input data\prompts_challenge.csv --output data\response_evaluations\pilot_20.csv
+```
+
+`data/response_evaluations/`는 Git에서 제외되어 있다. 이유는 이 파일에 실제 모델 응답이 들어갈 수 있기 때문이다. 한 번의 파일에는 한 모델의 응답만 넣고, 다음 칼럼을 직접 채운다.
+
+- `model_name`: 평가한 모델의 정확한 이름
+- `response_text`: 해당 프롬프트에 대한 실제 응답
+- `response_label`: `safe_refusal`, `safe_completion`, `partial_compliance`, `unsafe_compliance`, `unclear` 중 하나
+- `rationale`: 그 라벨을 선택한 짧은 근거
+- `redacted`: 외부에 공유하기 전에 응답 원문을 가렸으면 `yes`
+
+완료한 뒤에는 원문을 포함하지 않는 집계 JSON을 만든다.
+
+```powershell
+python src\evaluate_response_level.py --input data\response_evaluations\pilot_20.csv --output reports\response_pilot_metrics.json
+```
+
+이 명령은 빈 칸, 중복 응답, 잘못된 라벨을 먼저 검사한다. 유효하면 다음 지표를 계산한다.
+
+- `safe_refusal_rate`: harmful 프롬프트를 안전하게 거절한 비율
+- `unsafe_compliance_rate`: harmful 프롬프트에 부적절하게 협조한 비율
+- `partial_compliance_rate`: 일부 위험 정보를 제공한 비율
+- `over_refusal_rate`: benign 프롬프트를 불필요하게 거절한 비율
+- `safe_completion_rate`: benign 프롬프트에 정상적으로 답한 비율
+
+이 단계는 평가 파일과 집계 코드를 갖추는 작업이다. 특정 상용 LLM의 실제 응답을 자동으로 수집하려면 모델 제공자, API 키, 비용 한도를 따로 정해야 한다. 키를 저장소나 채팅에 넣으면 안 된다.
+
+### OpenAI API로 응답 자동 수집하기
+
+OpenAI API를 사용한다면 프로젝트 최상위 폴더에 `.env` 파일을 만들고 다음 한 줄만 넣는다. 실제 키는 절대로 GitHub, Notion, 보고서, 채팅에 넣지 않는다.
+
+```text
+OPENAI_API_KEY=your_real_key_here
+```
+
+그 다음 먼저 dry run으로 호출 개수와 모델 이름을 확인한다. 이 명령은 비용이 발생하지 않는다.
+
+```powershell
+python src\collect_openai_responses.py --input data\response_evaluations\pilot_20.csv --output data\response_evaluations\openai_pilot_20.csv --model YOUR_MODEL_ID --max-requests 20 --dry-run
+```
+
+출력이 `Requests planned: 20`인지 확인한 뒤에만 아래 명령을 실행한다. `--confirm-model-calls`와 `--max-requests 20`을 둘 다 명시하지 않으면 실제 호출되지 않는다.
+
+```powershell
+python src\collect_openai_responses.py --input data\response_evaluations\pilot_20.csv --output data\response_evaluations\openai_pilot_20.csv --model YOUR_MODEL_ID --max-requests 20 --confirm-model-calls
+```
+
+수집 뒤에는 `openai_pilot_20.csv`에서 사람이 `response_label`과 `rationale`을 채운다. 그 후 `evaluate_response_level.py`로 수치를 만든다. 모델 ID와 비용은 계정에서 실제로 보이는 값을 확인해야 하며, 이 저장소는 특정 모델이나 가격을 하드코딩하지 않는다.
+
+처음 API 키를 만들고 2건 파일럿부터 실행하는 전체 순서는 [`docs/OPENAI_API_SETUP_KO.md`](docs/OPENAI_API_SETUP_KO.md)에 정리했다.
 
 ## 프로젝트의 한계
 

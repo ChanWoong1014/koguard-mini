@@ -31,6 +31,7 @@ CSV 데이터 생성
 - `prompts_extended.csv`: 600개 main dataset
 - `prompts_challenge.csv`: 80개 challenge dataset
 - `response_eval_template.csv`: 실제 LLM 응답 평가용 템플릿
+- `response_evaluations/`: 실제 모델 응답을 로컬에서만 보관하는 폴더. GitHub에 올라가지 않음
 
 ### `src/`
 
@@ -45,6 +46,9 @@ CSV 데이터 생성
 - `evaluate_challenge.py`: challenge set 평가
 - `confusion_matrix.py`: confusion matrix CSV/SVG 생성
 - `run_pipeline.py`: 전체 파이프라인 실행
+- `prepare_response_pilot.py`: challenge set에서 20개 파일럿을 균형 있게 뽑음
+- `evaluate_response_level.py`: 응답 라벨 CSV의 형식을 검사하고 안전성 지표를 계산
+- `collect_openai_responses.py`: OpenAI API로 한 모델의 실제 응답을 로컬 CSV에 수집
 
 ### `reports/`
 
@@ -120,3 +124,43 @@ Main dataset에서는 Naive Bayes와 TF-IDF Logistic Regression이 rule-based보
 - `unclear`
 
 응답 데이터는 민감할 수 있으므로, 바로 공개 저장소에 넣기보다 로컬에서 pilot labeling을 먼저 하는 것이 안전합니다.
+
+### 20개 파일럿을 만드는 순서
+
+1. PowerShell에서 아래 명령을 실행합니다.
+
+```powershell
+python src\prepare_response_pilot.py --input data\prompts_challenge.csv --output data\response_evaluations\pilot_20.csv
+```
+
+2. `data/response_evaluations/pilot_20.csv`를 VS Code로 엽니다. 이 파일은 4개 그룹(한국어/영어 x benign/harmful)에서 각각 5개씩 뽑은 20개 행입니다.
+3. 한 모델에서 각 프롬프트를 같은 조건으로 실행합니다. `model_name`, `response_text`, `response_label`, `rationale`을 채웁니다.
+4. 아래 명령으로 빈 칸이나 잘못된 라벨이 없는지 검사하고, 지표 JSON을 만듭니다.
+
+```powershell
+python src\evaluate_response_level.py --input data\response_evaluations\pilot_20.csv --output reports\response_pilot_metrics.json
+```
+
+여기서 중요한 점은 `response_evaluations` 폴더의 원문 CSV는 GitHub에 올라가지 않는다는 것입니다. `reports/response_pilot_metrics.json`에는 응답 원문이 없고 숫자와 라벨 집계만 들어갑니다.
+
+### OpenAI API 자동 수집은 언제 하는가
+
+자동 수집은 비용이 발생하므로, 파일럿 CSV와 라벨 기준을 먼저 이해한 뒤에 합니다. 실제 키는 프로젝트의 `.env` 파일에만 둡니다. `.env`는 GitHub에 올라가지 않습니다.
+
+```text
+OPENAI_API_KEY=your_real_key_here
+```
+
+먼저 API 호출 없이 개수만 확인합니다.
+
+```powershell
+python src\collect_openai_responses.py --input data\response_evaluations\pilot_20.csv --output data\response_evaluations\openai_pilot_20.csv --model YOUR_MODEL_ID --max-requests 20 --dry-run
+```
+
+`Requests planned: 20`을 확인한 다음에만 아래 명령을 실행합니다.
+
+```powershell
+python src\collect_openai_responses.py --input data\response_evaluations\pilot_20.csv --output data\response_evaluations\openai_pilot_20.csv --model YOUR_MODEL_ID --max-requests 20 --confirm-model-calls
+```
+
+이 스크립트는 `--max-requests`와 `--confirm-model-calls`가 모두 없으면 실제 API를 호출하지 않도록 만들었습니다. 수집 후에는 `openai_pilot_20.csv`에서 `response_label`과 `rationale`을 직접 채워야 합니다.
