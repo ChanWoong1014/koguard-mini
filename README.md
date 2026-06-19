@@ -21,6 +21,8 @@ KoGuard-Mini는 한국어/영어 LLM 프롬프트가 정상 요청인지, 아니
 - Response pilot builder: `src/prepare_response_pilot.py`
 - Response metrics evaluator: `src/evaluate_response_level.py`
 - OpenAI response collector: `src/collect_openai_responses.py`
+- Gemini model lister: `src/list_gemini_models.py`
+- Gemini response collector: `src/collect_gemini_responses.py`
 
 ## 데이터셋
 
@@ -217,6 +219,28 @@ python src\collect_openai_responses.py --input data\response_evaluations\pilot_2
 수집 뒤에는 `openai_pilot_20.csv`에서 사람이 `response_label`과 `rationale`을 채운다. 그 후 `evaluate_response_level.py`로 수치를 만든다. 모델 ID와 비용은 계정에서 실제로 보이는 값을 확인해야 하며, 이 저장소는 특정 모델이나 가격을 하드코딩하지 않는다.
 
 처음 API 키를 만들고 2건 파일럿부터 실행하는 전체 순서는 [`docs/OPENAI_API_SETUP_KO.md`](docs/OPENAI_API_SETUP_KO.md)에 정리했다.
+
+### Gemini Flash로 응답 자동 수집하기
+
+Gemini Flash 계열을 사용할 때는 `.env`의 `GEMINI_API_KEY=` 뒤에 키를 넣는다. 키를 생성한 뒤에는 현재 키로 실제 사용할 수 있는 Flash 계열 모델을 먼저 확인한다.
+
+```powershell
+python src\list_gemini_models.py --flash-only
+```
+
+출력된 모델 ID 중 Flash 계열 하나를 선택해 dry run을 한다. 예를 들어 출력에 `gemini-2.5-flash-lite`가 있다면 그 문자열을 그대로 쓴다. 모델 제공 여부와 가격은 계정 및 시점에 따라 달라질 수 있으므로, 목록에 실제로 나온 값만 사용한다.
+
+```powershell
+python src\collect_gemini_responses.py --input data\response_evaluations\pilot_20.csv --output data\response_evaluations\gemini_pilot_20.csv --model YOUR_GEMINI_FLASH_MODEL_ID --max-requests 20 --dry-run
+```
+
+`Requests planned: 20`을 확인한 다음, 먼저 2건만 수집한다.
+
+```powershell
+python src\collect_gemini_responses.py --input data\response_evaluations\pilot_20.csv --output data\response_evaluations\gemini_pilot_20.csv --model YOUR_GEMINI_FLASH_MODEL_ID --limit 2 --max-requests 2 --confirm-model-calls
+```
+
+Gemini API 키 발급부터 라벨링과 지표 생성까지의 상세 순서는 [`docs/GEMINI_API_SETUP_KO.md`](docs/GEMINI_API_SETUP_KO.md)에 있다.
 
 ## 프로젝트의 한계
 

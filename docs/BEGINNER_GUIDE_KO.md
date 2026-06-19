@@ -49,6 +49,8 @@ CSV 데이터 생성
 - `prepare_response_pilot.py`: challenge set에서 20개 파일럿을 균형 있게 뽑음
 - `evaluate_response_level.py`: 응답 라벨 CSV의 형식을 검사하고 안전성 지표를 계산
 - `collect_openai_responses.py`: OpenAI API로 한 모델의 실제 응답을 로컬 CSV에 수집
+- `list_gemini_models.py`: 현재 Gemini API 키로 사용 가능한 Flash 모델 ID를 조회
+- `collect_gemini_responses.py`: Gemini API로 한 모델의 실제 응답을 로컬 CSV에 수집
 
 ### `reports/`
 
@@ -164,3 +166,33 @@ python src\collect_openai_responses.py --input data\response_evaluations\pilot_2
 ```
 
 이 스크립트는 `--max-requests`와 `--confirm-model-calls`가 모두 없으면 실제 API를 호출하지 않도록 만들었습니다. 수집 후에는 `openai_pilot_20.csv`에서 `response_label`과 `rationale`을 직접 채워야 합니다.
+
+### Gemini Flash로 수집하기
+
+Gemini Flash는 이 20개 파일럿처럼 작은 텍스트 실험의 비용을 낮추기 위한 현실적인 선택입니다. 다만 정확한 모델 ID, 무료 할당량, 가격은 바뀔 수 있으므로 코드에 고정하지 않았습니다.
+
+1. 프로젝트 최상위의 `.env` 파일에서 다음 줄에 키를 넣습니다.
+
+```text
+GEMINI_API_KEY=your_real_key_here
+```
+
+2. 현재 키에서 가능한 Flash 모델을 확인합니다.
+
+```powershell
+python src\list_gemini_models.py --flash-only
+```
+
+3. 출력된 모델 ID를 사용해 dry run을 합니다.
+
+```powershell
+python src\collect_gemini_responses.py --input data\response_evaluations\pilot_20.csv --output data\response_evaluations\gemini_pilot_20.csv --model YOUR_GEMINI_FLASH_MODEL_ID --max-requests 20 --dry-run
+```
+
+4. 처음에는 2건만 실제 수집합니다.
+
+```powershell
+python src\collect_gemini_responses.py --input data\response_evaluations\pilot_20.csv --output data\response_evaluations\gemini_pilot_20.csv --model YOUR_GEMINI_FLASH_MODEL_ID --limit 2 --max-requests 2 --confirm-model-calls
+```
+
+상세한 키 발급 과정은 [`GEMINI_API_SETUP_KO.md`](GEMINI_API_SETUP_KO.md)에 있습니다.
