@@ -58,8 +58,8 @@ def main() -> None:
     algorithm_comparison_path = reports_dir / "algorithm_comparison.csv"
     errors_path = reports_dir / "errors.csv"
     ml_errors_path = reports_dir / "ml_errors.csv"
-    report_path = reports_dir / "portfolio_report.md"
-    korean_report_path = reports_dir / "portfolio_report_ko.md"
+    report_path = reports_dir / "experiment_report.md"
+    korean_report_path = reports_dir / "experiment_report_ko.md"
 
     write_json(validation_path, validation)
     write_json(dataset_summary_path, dataset_summary)

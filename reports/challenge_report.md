@@ -20,4 +20,4 @@ If a model performs much worse on the challenge set than on cross-validation, th
 - The challenge set is still synthetic.
 - It is smaller than the main dataset.
 - It tests prompt-level classification only, not actual LLM responses.
-- It should be treated as a portfolio-level generalization check, not a production benchmark.
+- It should be treated as a small generalization check, not a production benchmark.

@@ -1,4 +1,4 @@
-"""Create a Korean Markdown portfolio report draft."""
+"""Create a Korean Markdown experiment report draft."""
 
 from __future__ import annotations
 
@@ -55,9 +55,9 @@ def build_korean_report(
     summary = results["summary"]
     return "\n\n".join(
         [
-            "# KoGuard-Mini 한국어 포트폴리오 보고서 초안",
+            "# KoGuard-Mini 한국어 실험 보고서 초안",
             "## 1. 프로젝트 개요\n\n"
-            "KoGuard-Mini는 한국어와 영어 프롬프트를 대상으로 LLM 안전성 위험 패턴을 평가하는 미니 프로젝트입니다. "
+            "KoGuard-Mini는 한국어와 영어 프롬프트를 대상으로 LLM 안전성 위험 패턴을 평가해보는 미니 실험 프로젝트입니다. "
             "새로운 LLM을 학습시키는 프로젝트가 아니라, 프롬프트가 정상적인 요청인지 또는 우회/정책 제거/프롬프트 누출 같은 위험 패턴인지 "
             "분석하는 평가 파이프라인을 만드는 것이 목표입니다.",
             "## 2. 연구 질문\n\n"
@@ -89,9 +89,9 @@ def build_korean_report(
             "## 9. 해석\n\n"
             "규칙 기반 baseline은 설명하기 쉽지만 표현 변화에 약합니다. 명시적인 키워드가 있는 프롬프트는 잘 잡지만, 우회 의도가 간접적으로 표현되면 놓칠 수 있습니다. "
             "문자 n-gram Naive Bayes baseline은 이 sanitized dataset에서 harmful recall을 크게 높였지만, 이것이 실제 LLM 서비스 안전성을 보장한다는 뜻은 아닙니다. "
-            "이 결과는 알고리즘 비교와 한계 분석을 보여주는 포트폴리오용 결과로 해석하는 것이 적절합니다.",
+            "이 결과는 알고리즘 비교와 한계 분석을 보여주는 학습용 실험 결과로 해석하는 것이 적절합니다.",
             "## 10. 한계\n\n"
-            "- 데이터셋은 포트폴리오에는 유용하지만 연구 결론을 강하게 주장하기에는 아직 작습니다.\n"
+            "- 데이터셋은 학습과 실험에는 유용하지만 연구 결론을 강하게 주장하기에는 아직 작습니다.\n"
             "- 라벨은 수작업으로 지정했습니다.\n"
             "- 규칙 기반 방식이라 표현이 조금만 바뀌어도 놓칠 수 있습니다.\n"
             "- Naive Bayes baseline은 단순한 알고리즘이라 synthetic wording에 과적합될 수 있습니다.\n"

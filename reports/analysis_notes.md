@@ -26,7 +26,7 @@
 
 The rule-based guardrail is highly explainable but brittle. On the challenge set, it over-blocks some benign safety discussion prompts and misses many harmful-style prompts with less direct wording.
 
-The character n-gram Naive Bayes baseline performs much better, including on the challenge set. However, this should still be treated as a portfolio-level result because both datasets are synthetic and sanitized.
+The character n-gram Naive Bayes baseline performs much better, including on the challenge set. However, this should still be treated as a small-scale learning experiment because both datasets are synthetic and sanitized.
 
 ## Important Caveat
 

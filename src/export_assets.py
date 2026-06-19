@@ -1,4 +1,4 @@
-"""Export CSV tables and SVG charts for the portfolio report."""
+"""Export CSV tables and SVG charts for the experiment report."""
 
 from __future__ import annotations
 

@@ -42,7 +42,7 @@ def build_report(rows: list[dict[str, str]]) -> str:
             "- The challenge set is still synthetic.\n"
             "- It is smaller than the main dataset.\n"
             "- It tests prompt-level classification only, not actual LLM responses.\n"
-            "- It should be treated as a portfolio-level generalization check, not a production benchmark.",
+            "- It should be treated as a small generalization check, not a production benchmark.",
         ]
     )
 

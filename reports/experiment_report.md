@@ -1,8 +1,8 @@
-# KoGuard-Mini Portfolio Report Draft
+# KoGuard-Mini Experiment Report Draft
 
 ## 1. Project Summary
 
-KoGuard-Mini is a small Korean-English LLM prompt safety evaluation project. The goal is not to train a new LLM, but to build an interpretable evaluation pipeline for checking whether prompts look benign or adversarial.
+KoGuard-Mini is a small Korean-English LLM prompt-level safety evaluation experiment. The goal is not to train a new LLM, but to build an interpretable evaluation pipeline for checking whether prompts look benign or adversarial.
 
 ## 2. Research Question
 
@@ -11,7 +11,7 @@ Can a simple rule-based guardrail detect sanitized English and Korean bypass-sty
 ## 3. Dataset Summary
 
 - Total rows: 200
-- Average prompt length: 42.76
+- Average prompt length: 42.72
 - Min prompt length: 19
 - Max prompt length: 81
 
@@ -163,7 +163,7 @@ The rule-based baseline is interpretable but brittle. It performs best when prom
 
 ## 11. Limitations
 
-- The dataset is useful for a portfolio but still small for research.
+- The dataset is useful for learning and experimentation but still small for research.
 - Labels are manually assigned.
 - The guardrail uses simple text patterns, so it is brittle.
 - The Naive Bayes baseline is simple and may overfit synthetic wording patterns.
@@ -176,4 +176,4 @@ The rule-based baseline is interpretable but brittle. It performs best when prom
 - Add more Korean paraphrases that do not use obvious keywords.
 - Add response-level labeling: safe refusal, partial compliance, unsafe compliance.
 - Compare additional ML baselines such as logistic regression or TF-IDF classifiers.
-- Convert this Markdown draft into a 6-10 page PDF portfolio report.
+- Convert this Markdown draft into a concise PDF experiment report.

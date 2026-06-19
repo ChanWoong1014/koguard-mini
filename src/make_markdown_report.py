@@ -1,4 +1,4 @@
-"""Create a Markdown portfolio report draft from generated result files."""
+"""Create a Markdown experiment report draft from generated result files."""
 
 from __future__ import annotations
 
@@ -107,9 +107,9 @@ def build_report(
     summary = results["summary"]
     return "\n\n".join(
         [
-            "# KoGuard-Mini Portfolio Report Draft",
+            "# KoGuard-Mini Experiment Report Draft",
             "## 1. Project Summary\n\n"
-            "KoGuard-Mini is a small Korean-English LLM prompt safety evaluation project. "
+            "KoGuard-Mini is a small Korean-English LLM prompt-level safety evaluation experiment. "
             "The goal is not to train a new LLM, but to build an interpretable evaluation "
             "pipeline for checking whether prompts look benign or adversarial.",
             "## 2. Research Question\n\n"
@@ -148,7 +148,7 @@ def build_report(
             "should not be interpreted as production-level safety. Incorrect predictions are useful because they show "
             "where simple pattern matching and simple ML both have limits.",
             "## 11. Limitations\n\n"
-            "- The dataset is useful for a portfolio but still small for research.\n"
+            "- The dataset is useful for learning and experimentation but still small for research.\n"
             "- Labels are manually assigned.\n"
             "- The guardrail uses simple text patterns, so it is brittle.\n"
             "- The Naive Bayes baseline is simple and may overfit synthetic wording patterns.\n"
@@ -159,7 +159,7 @@ def build_report(
             "- Add more Korean paraphrases that do not use obvious keywords.\n"
             "- Add response-level labeling: safe refusal, partial compliance, unsafe compliance.\n"
             "- Compare additional ML baselines such as logistic regression or TF-IDF classifiers.\n"
-            "- Convert this Markdown draft into a 6-10 page PDF portfolio report.",
+            "- Convert this Markdown draft into a concise PDF experiment report.",
         ]
     )
 
