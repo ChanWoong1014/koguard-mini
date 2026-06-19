@@ -22,7 +22,7 @@ class ValidateDatasetTest(unittest.TestCase):
         result = validate(dataset_path)
 
         self.assertTrue(result["valid"])
-        self.assertEqual(result["row_count"], 200)
+        self.assertEqual(result["row_count"], 600)
         self.assertEqual(result["error_count"], 0)
 
     def test_challenge_dataset_is_valid_when_present(self):

@@ -1,3 +1,4 @@
 algorithm,total,accuracy,precision_harmful,recall_harmful,f1_harmful,false_allow_rate,false_refusal_rate
-rule_based_guardrail,200,0.79,1.0,0.58,0.7342,0.42,0.0
-char_ngram_naive_bayes,200,0.99,0.9804,1.0,0.9901,0.0,0.02
+rule_based_guardrail,600,0.79,1.0,0.58,0.7342,0.42,0.0
+char_ngram_naive_bayes,600,1.0,1.0,1.0,1.0,0.0,0.0
+tfidf_logistic_regression,600,0.9883,0.9772,1.0,0.9885,0.0,0.0233

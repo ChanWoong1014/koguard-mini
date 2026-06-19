@@ -11,11 +11,15 @@ from compare_algorithms import comparison_rows, write_csv as write_comparison_cs
 from error_analysis import extract_errors, save_errors
 from evaluate_guardrail import evaluate as evaluate_rule
 from evaluate_guardrail import load_rows
-from ml_baseline import NaiveBayesPromptClassifier, score_predictions
+from ml_baseline import NaiveBayesPromptClassifier, TfidfLogisticRegressionPromptClassifier, score_predictions
 
 
-def evaluate_ml_on_challenge(train_rows: list[dict[str, str]], challenge_rows: list[dict[str, str]]) -> dict[str, Any]:
-    classifier = NaiveBayesPromptClassifier()
+def evaluate_classifier_on_challenge(
+    train_rows: list[dict[str, str]],
+    challenge_rows: list[dict[str, str]],
+    classifier: Any,
+    algorithm: str,
+) -> dict[str, Any]:
     classifier.fit(train_rows)
 
     examples: list[dict[str, Any]] = []
@@ -34,11 +38,31 @@ def evaluate_ml_on_challenge(train_rows: list[dict[str, str]], challenge_rows: l
         )
 
     return {
-        "algorithm": "char_ngram_naive_bayes_challenge",
+        "algorithm": algorithm,
         "validation": "train on prompts_extended, test on prompts_challenge",
         "summary": score_predictions(examples),
         "examples": examples,
     }
+
+
+def evaluate_ml_on_challenge(train_rows: list[dict[str, str]], challenge_rows: list[dict[str, str]]) -> dict[str, Any]:
+    return evaluate_classifier_on_challenge(
+        train_rows,
+        challenge_rows,
+        NaiveBayesPromptClassifier(),
+        "char_ngram_naive_bayes_challenge",
+    )
+
+
+def evaluate_logistic_regression_on_challenge(
+    train_rows: list[dict[str, str]], challenge_rows: list[dict[str, str]]
+) -> dict[str, Any]:
+    return evaluate_classifier_on_challenge(
+        train_rows,
+        challenge_rows,
+        TfidfLogisticRegressionPromptClassifier(),
+        "tfidf_logistic_regression_challenge",
+    )
 
 
 def main() -> None:
@@ -56,7 +80,8 @@ def main() -> None:
 
     rule_results = evaluate_rule(challenge_rows)
     ml_results = evaluate_ml_on_challenge(train_rows, challenge_rows)
-    algorithms = comparison_rows(rule_results, ml_results)
+    logistic_results = evaluate_logistic_regression_on_challenge(train_rows, challenge_rows)
+    algorithms = comparison_rows(rule_results, ml_results, logistic_results)
 
     (reports_dir / "challenge_rule_results.json").write_text(
         json.dumps(rule_results, ensure_ascii=False, indent=2), encoding="utf-8"
@@ -64,9 +89,13 @@ def main() -> None:
     (reports_dir / "challenge_ml_results.json").write_text(
         json.dumps(ml_results, ensure_ascii=False, indent=2), encoding="utf-8"
     )
+    (reports_dir / "challenge_logistic_results.json").write_text(
+        json.dumps(logistic_results, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
     write_comparison_csv(reports_dir / "challenge_algorithm_comparison.csv", algorithms)
     save_errors(extract_errors(rule_results), reports_dir / "challenge_errors.csv")
     save_errors(extract_errors(ml_results), reports_dir / "challenge_ml_errors.csv")
+    save_errors(extract_errors(logistic_results), reports_dir / "challenge_logistic_errors.csv")
 
     print(json.dumps(algorithms, ensure_ascii=False, indent=2))
 

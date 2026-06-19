@@ -1,8 +1,8 @@
 # KoGuard-Mini
 
-KoGuard-Mini는 한국어/영어 LLM 프롬프트가 정상 요청인지, 아니면 안전 정책 우회 가능성이 있는 요청인지 실험적으로 평가해보는 작은 프로젝트입니다.
+KoGuard-Mini는 한국어/영어 LLM 프롬프트가 정상 요청인지, 아니면 안전 정책 우회 가능성이 있는 위험 스타일 요청인지 실험적으로 분류해보는 작은 프로젝트입니다.
 
-이 프로젝트는 이전에 진행한 PromptLouter 프로젝트에서 출발했습니다. PromptLouter에서는 입력을 어떤 LLM으로 보낼지, 비용과 성능을 어떻게 조절할지에 관심이 있었다면, KoGuard-Mini에서는 한 단계 앞의 질문을 다룹니다.
+이 프로젝트는 이전에 진행한 PromptLouter 프로젝트에서 출발했습니다. PromptLouter에서는 입력을 어떤 LLM으로 보낼지, 비용과 성능을 어떻게 조절할지에 관심이 있었다면, KoGuard-Mini에서는 그보다 앞단의 질문을 다룹니다.
 
 > LLM에 입력되기 전, 사용자의 프롬프트 자체가 안전한 요청인지 위험 신호가 있는 요청인지 간단히 평가할 수 있을까?
 
@@ -10,24 +10,26 @@ KoGuard-Mini는 한국어/영어 LLM 프롬프트가 정상 요청인지, 아니
 
 ## 현재 구성
 
-- 확장 데이터셋: `data/prompts_extended.csv`
-- challenge 데이터셋: `data/prompts_challenge.csv`
-- 규칙 기반 baseline: `src/rule_guardrail.py`
-- ML baseline: `src/ml_baseline.py`
-- 전체 실행 파이프라인: `src/run_pipeline.py`
-- 결과 보고서: `reports/experiment_report_ko.md`
+- Main dataset: `data/prompts_extended.csv`
+- Challenge dataset: `data/prompts_challenge.csv`
+- Rule-based baseline: `src/rule_guardrail.py`
+- Character n-gram Naive Bayes: `src/ml_baseline.py`
+- TF-IDF Logistic Regression: `src/ml_baseline.py`
+- Confusion matrix export: `src/confusion_matrix.py`
+- Full pipeline: `src/run_pipeline.py`
+- Response-level evaluation plan: `docs/RESPONSE_LEVEL_EVALUATION_PLAN.md`
 
 ## 데이터셋
 
-### `prompts_extended.csv`
+### Main Extended Dataset
 
-- 총 200개
-- 영어 100개
-- 한국어 100개
-- benign 100개
-- harmful-style 100개
+- 총 600개
+- 영어 300개
+- 한국어 300개
+- benign 300개
+- harmful-style 300개
 
-### `prompts_challenge.csv`
+### Challenge Set
 
 - 총 80개
 - 영어 40개
@@ -35,25 +37,25 @@ KoGuard-Mini는 한국어/영어 LLM 프롬프트가 정상 요청인지, 아니
 - benign 40개
 - harmful-style 40개
 
-`harmful-style`은 실제 유해한 방법을 자세히 담은 문장이 아닙니다. 공개 가능한 수준의 sanitized 예시로, 안전 정책 우회, 프롬프트 누출, 민감정보 요구, 도구 오용처럼 위험 신호가 있는 요청 형태를 약하게 표현한 것입니다.
+`harmful-style`은 실제 위해 방법을 자세히 담은 문장이 아닙니다. 공개 가능한 수준으로 정제한 synthetic/sanitized 예시이며, 안전 정책 우회, 프롬프트 유출, 민감정보 요구, 도구 오용처럼 위험 신호가 있는 요청 형태를 약하게 표현한 것입니다.
 
 ## 비교한 방법
 
-### 1. Rule-based Guardrail
+### 1. Rule-Based Guardrail
 
-정규표현식 기반 규칙으로 위험 표현을 탐지합니다.
+정규표현식과 키워드 규칙으로 위험 표현을 탐지합니다.
 
 장점:
 
 - 이해하기 쉽습니다.
-- 왜 탐지했는지 설명하기 쉽습니다.
-- 학습 데이터가 없어도 동작합니다.
+- 어떤 규칙이 매칭됐는지 설명하기 쉽습니다.
+- 학습 데이터 없이 동작합니다.
 
 단점:
 
 - 사람이 미리 쓴 표현만 잘 잡습니다.
 - 표현이 조금만 바뀌어도 놓칠 수 있습니다.
-- 정상적인 안전성 설명 요청을 과하게 막을 수 있습니다.
+- 정상적인 안전성 설명 요청을 과하게 막거나, 반대로 간접 우회 표현을 놓칠 수 있습니다.
 
 ### 2. Character N-Gram Naive Bayes
 
@@ -62,32 +64,61 @@ KoGuard-Mini는 한국어/영어 LLM 프롬프트가 정상 요청인지, 아니
 장점:
 
 - 사람이 직접 규칙으로 쓰지 않은 표현도 어느 정도 학습할 수 있습니다.
-- 영어와 한국어 모두에 적용할 수 있습니다.
-- 외부 라이브러리 없이 실행됩니다.
+- 한국어와 영어 모두에 적용하기 쉽습니다.
+- 외부 ML 라이브러리 없이 실행됩니다.
 
 단점:
 
 - 문장의 의미를 깊게 이해하는 모델은 아닙니다.
 - synthetic 데이터셋의 표현 패턴에 과적합될 수 있습니다.
-- 실제 LLM 응답 안전성을 직접 평가하지는 않습니다.
+
+### 3. TF-IDF Logistic Regression
+
+문자 n-gram을 TF-IDF feature로 바꾼 뒤, 직접 구현한 logistic regression으로 분류합니다.
+
+이 baseline을 추가한 이유는 Naive Bayes보다 조금 더 일반적인 ML 분류기와 비교하기 위해서입니다. 현재 구현은 `scikit-learn` 없이 동작하도록 간단한 SGD 방식으로 작성했습니다.
+
+장점:
+
+- feature 중요도와 threshold 조정 개념을 설명하기 좋습니다.
+- Naive Bayes와 다른 학습 방식을 비교할 수 있습니다.
+- confusion matrix를 통해 false allow와 false refusal을 더 명확히 볼 수 있습니다.
+
+단점:
+
+- 여전히 단순한 선형 모델입니다.
+- 데이터가 synthetic이면 실제 환경 성능으로 일반화하기 어렵습니다.
+- threshold에 따라 false allow와 false refusal의 균형이 달라집니다.
 
 ## 현재 결과
 
 ### Main Extended Dataset
 
-| Algorithm | Accuracy | Harmful Recall | False Allow Rate | False Refusal Rate |
+| Algorithm | Accuracy | Harmful Recall | False Allow | False Refusal |
 |---|---:|---:|---:|---:|
 | Rule-based guardrail | 0.79 | 0.58 | 0.42 | 0.0 |
-| Character n-gram Naive Bayes | 0.99 | 1.0 | 0.0 | 0.02 |
+| Character n-gram Naive Bayes | 1.0 | 1.0 | 0.0 | 0.0 |
+| TF-IDF Logistic Regression | 0.9883 | 1.0 | 0.0 | 0.0233 |
 
 ### Challenge Set
 
-| Algorithm | Accuracy | Harmful Recall | False Allow Rate | False Refusal Rate |
+| Algorithm | Accuracy | Harmful Recall | False Allow | False Refusal |
 |---|---:|---:|---:|---:|
 | Rule-based guardrail | 0.4875 | 0.075 | 0.925 | 0.1 |
 | Character n-gram Naive Bayes | 0.9875 | 1.0 | 0.0 | 0.025 |
+| TF-IDF Logistic Regression | 0.925 | 1.0 | 0.0 | 0.15 |
 
-해석하면, rule-based 방식은 설명 가능하지만 표현 변화에 매우 약했습니다. 반면 Naive Bayes는 현재 synthetic 데이터셋과 challenge set에서 훨씬 높은 recall을 보였습니다. 다만 이 결과를 실제 서비스 성능으로 일반화하면 안 됩니다.
+해석하면, rule-based 방식은 설명 가능하지만 표현 변화에 매우 취약합니다. 특히 challenge set에서는 harmful-style 요청 40개 중 대부분을 놓쳤습니다.
+
+Naive Bayes와 Logistic Regression은 현재 synthetic 데이터셋에서는 훨씬 좋은 결과를 보였습니다. 하지만 이 결과를 실제 LLM 서비스 안전성으로 일반화하면 안 됩니다. 두 모델 모두 실제 의도를 깊게 이해했다기보다는, 직접 만든 데이터의 표현 패턴을 잘 학습했을 가능성이 있습니다.
+
+## 결과 차트
+
+![Harmful F1 by Algorithm](reports/chart_algorithm_f1.svg)
+
+![Challenge Harmful F1 by Algorithm](reports/chart_challenge_algorithm_f1.svg)
+
+![TF-IDF Logistic Regression Confusion Matrix](reports/chart_confusion_matrix_logistic.svg)
 
 ## 실행 방법
 
@@ -111,32 +142,33 @@ python -m unittest discover tests
 
 ```text
 KoGuard-Mini pipeline complete.
-Ran 15 tests
+Ran 18 tests
 OK
 ```
 
-## 주요 결과 파일
+## 주요 산출물
 
-- `reports/algorithm_comparison.csv`: main dataset에서 알고리즘 비교
-- `reports/challenge_algorithm_comparison.csv`: challenge set에서 알고리즘 비교
-- `reports/errors.csv`: rule-based 오분류 사례
-- `reports/ml_errors.csv`: ML baseline 오분류 사례
-- `reports/challenge_report.md`: challenge set 결과 요약
-- `reports/experiment_report_ko.md`: 전체 실험 보고서 초안
-- `reports/*.svg`: 결과 시각화 차트
+- `reports/algorithm_comparison.csv`: main dataset 알고리즘 비교
+- `reports/challenge_algorithm_comparison.csv`: challenge set 알고리즘 비교
+- `reports/confusion_matrix_*.csv`: 알고리즘별 confusion matrix
+- `reports/chart_*.svg`: 결과 시각화
+- `reports/experiment_report.md`: 전체 실험 보고서 초안
+- `reports/experiment_report_ko.md`: 한국어 실험 보고서 초안
+- `docs/RESPONSE_LEVEL_EVALUATION_PLAN.md`: 실제 LLM 응답 평가 설계 문서
+- `data/response_eval_template.csv`: response-level labeling 템플릿
 
 ## 프로젝트의 한계
 
 - 데이터셋은 직접 만든 synthetic/sanitized 데이터입니다.
-- 실제 사용자 로그나 실제 jailbreak benchmark가 아닙니다.
-- 실제 LLM 응답을 수집해서 평가하지 않았습니다.
-- 라벨링을 여러 사람이 교차 검증하지 않았습니다.
-- Naive Bayes 성능이 높아도 실제 환경에서 그대로 동작한다고 볼 수 없습니다.
+- 실제 사용자 로그나 공개 jailbreak benchmark가 아닙니다.
+- 실제 LLM 응답 안전성을 직접 평가하지는 않았습니다.
+- 모델 성능이 높아도 실제 서비스 안전성을 보장하지 않습니다.
+- Naive Bayes와 Logistic Regression은 데이터 작성 스타일에 과적합될 수 있습니다.
+- 현재 결과는 연구 결론보다는 학습과 실험 결과로 해석하는 것이 적절합니다.
 
 ## 다음 개선 방향
 
-- 실제 LLM 응답을 수집하고 safe refusal, partial compliance, unsafe compliance로 라벨링하기
-- 공개 benchmark 일부를 안전하게 redaction해서 비교하기
-- TF-IDF, Logistic Regression 같은 추가 baseline 구현하기
-- 한국어 우회 표현을 더 다양하게 확장하기
-- 데이터 라벨링 기준 문서화하기
+- 실제 LLM 응답을 수집하고 `safe_refusal`, `partial_compliance`, `unsafe_compliance`로 라벨링하기
+- 공개 benchmark를 안전하게 redaction한 뒤 비교하기
+- 사람이 라벨링 기준을 여러 번 검토해서 기준 안정성 높이기
+- prompt-level classifier와 response-level evaluation 결과를 연결해서 분석하기

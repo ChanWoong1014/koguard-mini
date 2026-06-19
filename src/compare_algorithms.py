@@ -25,11 +25,10 @@ def load_json(path: Path) -> dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def comparison_rows(rule_results: dict[str, Any], ml_results: dict[str, Any]) -> list[dict[str, Any]]:
-    return [
-        {"algorithm": "rule_based_guardrail", **rule_results["summary"]},
-        {"algorithm": ml_results["algorithm"], **ml_results["summary"]},
-    ]
+def comparison_rows(rule_results: dict[str, Any], *ml_results: dict[str, Any]) -> list[dict[str, Any]]:
+    rows = [{"algorithm": "rule_based_guardrail", **rule_results["summary"]}]
+    rows.extend({"algorithm": result["algorithm"], **result["summary"]} for result in ml_results)
+    return rows
 
 
 def write_csv(path: Path, rows: list[dict[str, Any]]) -> None:

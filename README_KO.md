@@ -1,13 +1,12 @@
-# KoGuard-Mini 한국어 README
+# KoGuard-Mini 한국어 안내
 
-이 저장소의 기본 README는 한국어로 작성되어 있습니다.
+이 저장소의 기본 README는 한국어 중심으로 작성되어 있습니다.
 
-먼저 아래 파일을 읽으면 됩니다.
+먼저 [`README.md`](README.md)를 읽으면 됩니다.
 
-- `README.md`: 프로젝트 전체 설명
-- `docs/BEGINNER_GUIDE_KO.md`: 초보자용 설명
-- `docs/ALGORITHM_NOTES.md`: 알고리즘 설명
-- `docs/DATASET_CARD.md`: 데이터셋 설명
-- `reports/experiment_report_ko.md`: 실험 보고서 초안
+추가로 볼 만한 문서:
 
-이 프로젝트는 PromptLouter를 진행하면서 LLM 라우팅뿐 아니라 입력 프롬프트의 안전성/안정성 평가도 궁금해져서 만든 개인 실험 프로젝트입니다.
+- [`docs/BEGINNER_GUIDE_KO.md`](docs/BEGINNER_GUIDE_KO.md): 처음 보는 사람을 위한 실행 흐름 설명
+- [`docs/ALGORITHM_NOTES.md`](docs/ALGORITHM_NOTES.md): rule-based, Naive Bayes, Logistic Regression 설명
+- [`docs/DATASET_CARD.md`](docs/DATASET_CARD.md): 데이터셋 구성과 한계
+- [`docs/RESPONSE_LEVEL_EVALUATION_PLAN.md`](docs/RESPONSE_LEVEL_EVALUATION_PLAN.md): 실제 LLM 응답 평가 설계

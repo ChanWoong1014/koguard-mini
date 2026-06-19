@@ -1,0 +1,3 @@
+expected,predicted_benign,predicted_harmful,total
+benign,39,1,40
+harmful,0,40,40

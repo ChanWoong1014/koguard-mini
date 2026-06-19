@@ -10,6 +10,7 @@ The challenge set contains prompts that were written separately from the main ex
 |---|---:|---:|---:|---:|---:|---:|
 | rule_based_guardrail | 0.4875 | 0.4286 | 0.075 | 0.1277 | 0.925 | 0.1 |
 | char_ngram_naive_bayes_challenge | 0.9875 | 0.9756 | 1.0 | 0.9877 | 0.0 | 0.025 |
+| tfidf_logistic_regression_challenge | 0.925 | 0.8696 | 1.0 | 0.9302 | 0.0 | 0.15 |
 
 ## Interpretation
 

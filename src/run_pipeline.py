@@ -13,11 +13,12 @@ from evaluate_guardrail import evaluate
 from evaluate_guardrail import load_rows as load_evaluation_rows
 from export_assets import export_algorithm_chart, export_assets
 from compare_algorithms import comparison_rows, write_csv as write_comparison_csv
+from confusion_matrix import write_confusion_csv, write_confusion_svg
 from make_korean_report import build_korean_report
 from make_challenge_report import build_report as build_challenge_report
 from make_markdown_report import build_report
-from evaluate_challenge import evaluate_ml_on_challenge
-from ml_baseline import evaluate_cross_validation
+from evaluate_challenge import evaluate_logistic_regression_on_challenge, evaluate_ml_on_challenge
+from ml_baseline import evaluate_cross_validation, evaluate_logistic_regression_cross_validation
 from validate_dataset import validate
 from export_assets import horizontal_bar_svg
 
@@ -47,17 +48,21 @@ def main() -> None:
     rows = load_evaluation_rows(input_path)
     results = evaluate(rows)
     ml_results = evaluate_cross_validation(rows, k=5)
-    algorithms = comparison_rows(results, ml_results)
+    logistic_results = evaluate_logistic_regression_cross_validation(rows, k=5)
+    algorithms = comparison_rows(results, ml_results, logistic_results)
     errors = extract_errors(results)
     ml_errors = extract_errors(ml_results)
+    logistic_errors = extract_errors(logistic_results)
 
     validation_path = reports_dir / "validation.json"
     dataset_summary_path = reports_dir / "dataset_summary.json"
     results_path = reports_dir / "results.json"
     ml_results_path = reports_dir / "ml_results.json"
+    logistic_results_path = reports_dir / "logistic_results.json"
     algorithm_comparison_path = reports_dir / "algorithm_comparison.csv"
     errors_path = reports_dir / "errors.csv"
     ml_errors_path = reports_dir / "ml_errors.csv"
+    logistic_errors_path = reports_dir / "logistic_errors.csv"
     report_path = reports_dir / "experiment_report.md"
     korean_report_path = reports_dir / "experiment_report_ko.md"
 
@@ -65,9 +70,25 @@ def main() -> None:
     write_json(dataset_summary_path, dataset_summary)
     write_json(results_path, results)
     write_json(ml_results_path, ml_results)
+    write_json(logistic_results_path, logistic_results)
     write_comparison_csv(algorithm_comparison_path, algorithms)
     save_errors(errors, errors_path)
     save_errors(ml_errors, ml_errors_path)
+    save_errors(logistic_errors, logistic_errors_path)
+    write_confusion_csv(reports_dir / "confusion_matrix_rule_based.csv", results)
+    write_confusion_csv(reports_dir / "confusion_matrix_char_ngram_naive_bayes.csv", ml_results)
+    write_confusion_csv(reports_dir / "confusion_matrix_tfidf_logistic_regression.csv", logistic_results)
+    write_confusion_svg(reports_dir / "chart_confusion_matrix_rule_based.svg", "Rule-Based Confusion Matrix", results)
+    write_confusion_svg(
+        reports_dir / "chart_confusion_matrix_naive_bayes.svg",
+        "Naive Bayes Confusion Matrix",
+        ml_results,
+    )
+    write_confusion_svg(
+        reports_dir / "chart_confusion_matrix_logistic.svg",
+        "TF-IDF Logistic Regression Confusion Matrix",
+        logistic_results,
+    )
     export_assets(dataset_summary, results, reports_dir)
     export_algorithm_chart(algorithms, reports_dir)
 
@@ -76,12 +97,39 @@ def main() -> None:
         challenge_rows = load_evaluation_rows(challenge_path)
         challenge_rule_results = evaluate(challenge_rows)
         challenge_ml_results = evaluate_ml_on_challenge(rows, challenge_rows)
-        challenge_algorithms = comparison_rows(challenge_rule_results, challenge_ml_results)
+        challenge_logistic_results = evaluate_logistic_regression_on_challenge(rows, challenge_rows)
+        challenge_algorithms = comparison_rows(challenge_rule_results, challenge_ml_results, challenge_logistic_results)
         write_json(reports_dir / "challenge_rule_results.json", challenge_rule_results)
         write_json(reports_dir / "challenge_ml_results.json", challenge_ml_results)
+        write_json(reports_dir / "challenge_logistic_results.json", challenge_logistic_results)
         write_comparison_csv(reports_dir / "challenge_algorithm_comparison.csv", challenge_algorithms)
         save_errors(extract_errors(challenge_rule_results), reports_dir / "challenge_errors.csv")
         save_errors(extract_errors(challenge_ml_results), reports_dir / "challenge_ml_errors.csv")
+        save_errors(extract_errors(challenge_logistic_results), reports_dir / "challenge_logistic_errors.csv")
+        write_confusion_csv(reports_dir / "challenge_confusion_matrix_rule_based.csv", challenge_rule_results)
+        write_confusion_csv(
+            reports_dir / "challenge_confusion_matrix_char_ngram_naive_bayes.csv",
+            challenge_ml_results,
+        )
+        write_confusion_csv(
+            reports_dir / "challenge_confusion_matrix_tfidf_logistic_regression.csv",
+            challenge_logistic_results,
+        )
+        write_confusion_svg(
+            reports_dir / "chart_challenge_confusion_matrix_rule_based.svg",
+            "Challenge Rule-Based Confusion Matrix",
+            challenge_rule_results,
+        )
+        write_confusion_svg(
+            reports_dir / "chart_challenge_confusion_matrix_naive_bayes.svg",
+            "Challenge Naive Bayes Confusion Matrix",
+            challenge_ml_results,
+        )
+        write_confusion_svg(
+            reports_dir / "chart_challenge_confusion_matrix_logistic.svg",
+            "Challenge TF-IDF Logistic Regression Confusion Matrix",
+            challenge_logistic_results,
+        )
         (reports_dir / "chart_challenge_algorithm_f1.svg").write_text(
             horizontal_bar_svg(
                 "Challenge Harmful F1 by Algorithm",
@@ -105,9 +153,11 @@ def main() -> None:
     print(f"- Dataset summary: {dataset_summary_path}")
     print(f"- Evaluation results: {results_path}")
     print(f"- ML results: {ml_results_path}")
+    print(f"- Logistic regression results: {logistic_results_path}")
     print(f"- Algorithm comparison: {algorithm_comparison_path}")
     print(f"- Error rows: {errors_path}")
     print(f"- ML error rows: {ml_errors_path}")
+    print(f"- Logistic error rows: {logistic_errors_path}")
     print(f"- Report draft: {report_path}")
     print(f"- Korean report draft: {korean_report_path}")
     if challenge_path.exists():

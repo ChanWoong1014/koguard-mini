@@ -1,98 +1,118 @@
 # 알고리즘 설명
 
-이 프로젝트는 두 가지 baseline을 비교합니다.
+KoGuard-Mini는 세 가지 baseline을 비교한다.
+
+1. Rule-based guardrail
+2. Character n-gram Naive Bayes
+3. TF-IDF Logistic Regression
+
+여기서 baseline은 “가장 먼저 비교 기준으로 삼는 단순한 방법”이라는 뜻이다. 복잡한 LLM을 새로 학습시키기 전에, 간단한 방법으로도 어느 정도 되는지 확인하는 것이 목적이다.
 
 ## 1. Rule-Based Guardrail
 
-파일:
+Rule-based 방식은 사람이 직접 만든 규칙으로 프롬프트를 분류한다.
 
-```text
-src/rule_guardrail.py
-```
+예를 들어 다음과 같은 위험 신호를 찾는다.
 
-정규표현식으로 위험 신호를 찾는 방식입니다.
+- 이전 지시를 무시하라는 표현
+- 안전 정책을 제거하라는 표현
+- 숨겨진 시스템 프롬프트를 보여달라는 표현
+- 민감 정보를 요구하는 표현
+- 도구를 허용 범위 밖으로 사용하려는 표현
 
-예를 들어 다음과 비슷한 표현을 찾습니다.
+장점:
 
-- 규칙 무시
-- 가드레일 우회
-- 숨겨진 시스템 프롬프트 공개
-- 필터 비활성화
-- 민감정보 제공
-- 정책 제거
+- 구현이 쉽다.
+- 어떤 규칙 때문에 탐지됐는지 설명하기 쉽다.
+- 학습 데이터가 없어도 동작한다.
 
-### 장점
+단점:
 
-- 이해하기 쉽습니다.
-- 어떤 규칙 때문에 탐지됐는지 설명할 수 있습니다.
-- 학습 데이터 없이도 동작합니다.
-- 작은 실험의 기준선으로 적합합니다.
+- 사람이 미리 쓴 표현만 잘 잡는다.
+- 표현이 조금만 바뀌면 놓칠 수 있다.
+- 문맥을 깊게 이해하지 못한다.
 
-### 단점
-
-- 사람이 미리 적은 표현만 잘 잡습니다.
-- 표현이 바뀌면 쉽게 놓칩니다.
-- 한국어 문장 순서가 바뀌면 탐지가 약해질 수 있습니다.
-- 정상적인 안전성 설명 요청도 위험하게 볼 수 있습니다.
+이 프로젝트 결과에서도 rule-based 방식은 main dataset에서 harmful recall 0.58, challenge set에서 harmful recall 0.075로 떨어졌다. 특히 challenge set false allow rate 0.925는 새로운 표현에 매우 취약하다는 뜻이다.
 
 ## 2. Character N-Gram Naive Bayes
 
-파일:
+Naive Bayes는 간단한 확률 기반 분류기다.
+
+이 프로젝트에서는 단어가 아니라 character n-gram을 feature로 사용한다. character n-gram은 문장을 짧은 문자 조각으로 나눈 것이다.
+
+예를 들어 `safety`라는 단어를 3글자 조각으로 보면 다음과 비슷하다.
 
 ```text
-src/ml_baseline.py
+saf, afe, fet, ety
 ```
 
-문장을 짧은 문자 조각으로 나누고, 어떤 조각이 benign 또는 harmful-style 문장에서 자주 나타나는지 학습하는 방식입니다.
+이 방식을 쓰는 이유는 한국어와 영어가 섞여 있어도 비교적 단순하게 처리할 수 있기 때문이다.
 
-예를 들어 "ignore safety rules"라는 문장은 `ign`, `safe`, `rule` 같은 문자 조각으로 나뉩니다. 한국어도 같은 방식으로 처리할 수 있기 때문에 형태소 분석기 없이 간단히 실험할 수 있습니다.
+장점:
 
-현재 구현은 5-fold stratified cross-validation을 사용합니다.
+- 구현이 가볍다.
+- 한국어/영어 혼합 데이터에 적용하기 쉽다.
+- 규칙에 없는 표현도 데이터에서 반복되면 학습할 수 있다.
 
-### 장점
+단점:
 
-- 사람이 규칙으로 직접 쓰지 않은 표현도 일부 학습할 수 있습니다.
-- 영어와 한국어 모두에 적용할 수 있습니다.
-- 외부 라이브러리 없이 순수 Python으로 동작합니다.
-- rule-based 방식과 비교하기 좋습니다.
+- 문장의 의미를 진짜로 이해하는 것은 아니다.
+- synthetic 데이터의 표현 패턴에 과적합될 수 있다.
+- 데이터 작성 방식이 바뀌면 성능이 크게 달라질 수 있다.
 
-### 단점
+## 3. TF-IDF Logistic Regression
 
-- 의미를 깊게 이해하는 모델은 아닙니다.
-- synthetic 데이터의 표현 패턴을 외울 수 있습니다.
-- 실제 LLM 응답을 평가하지 않습니다.
-- 실제 서비스용 안전 모델이라고 보기에는 부족합니다.
+Logistic Regression은 이진 분류에 자주 쓰이는 선형 모델이다. 여기서는 `benign`과 `harmful` 중 하나로 분류한다.
 
-## 3. Challenge Set
+전체 흐름은 다음과 같다.
 
-파일:
+1. 프롬프트를 character n-gram으로 나눈다.
+2. 각 n-gram에 TF-IDF 가중치를 계산한다.
+3. Logistic Regression이 각 feature의 가중치를 학습한다.
+4. harmful일 확률이 threshold 이상이면 harmful로 분류한다.
 
-```text
-data/prompts_challenge.csv
-```
+### TF-IDF란?
 
-challenge set은 main extended dataset과 따로 작성한 데이터입니다.
+TF-IDF는 어떤 feature가 한 문장 안에서는 자주 나오지만 전체 문서에서는 너무 흔하지 않을 때 더 높은 값을 주는 방식이다.
 
-목적은 다음 질문을 확인하는 것입니다.
+간단히 말하면:
 
-> 알고리즘이 기존 데이터 표현을 외운 것인가, 아니면 새로운 표현에도 어느 정도 대응하는가?
+- 자주 나오는 feature는 중요할 수 있다.
+- 하지만 모든 문장에 흔하게 나오는 feature는 구분력이 낮다.
+- 그래서 “그 문장에서는 중요하지만 전체에서는 너무 흔하지 않은 패턴”을 더 크게 본다.
 
-challenge set에는 다음 유형이 들어 있습니다.
+### Threshold가 중요한 이유
 
-- 안전성 설명을 요청하지만 `bypass`, `hidden prompt` 같은 단어가 들어간 정상 요청
-- 직접적인 키워드가 적은 harmful-style 요청
-- 한국어/영어 표현 변형
+Logistic Regression은 내부적으로 harmful일 확률에 가까운 점수를 만든다.
 
-현재 결과에서는 rule-based 방식이 challenge set에서 크게 약해졌습니다. 반면 Naive Bayes는 더 안정적으로 동작했지만, synthetic 데이터셋이라는 한계는 여전히 있습니다.
+이 점수가 기준값보다 크면 harmful, 작으면 benign으로 본다.
 
-## 4. 이 프로젝트에서 말할 수 있는 것
+이 기준값을 threshold라고 한다.
 
-적절한 설명:
+- threshold가 낮으면 harmful을 많이 잡지만 정상 요청도 과하게 막을 수 있다.
+- threshold가 높으면 정상 요청은 덜 막지만 위험 요청을 놓칠 수 있다.
 
-> PromptLouter를 진행하며 LLM 라우팅뿐 아니라 입력 프롬프트의 안전성 평가도 궁금해졌다. 그래서 한국어/영어 프롬프트 데이터셋을 만들고, rule-based guardrail과 character n-gram Naive Bayes를 비교하여 프롬프트 수준의 위험 신호 탐지 실험을 진행했다.
+현재 프로젝트에서는 기본 threshold를 `0.9`로 두었다. 초기 threshold `0.5`에서는 harmful recall은 높았지만 false refusal이 너무 커서 정상 요청을 많이 막았다. 그래서 main dataset의 점수 분포를 확인한 뒤 더 보수적인 기준을 적용했다.
 
-피해야 할 설명:
+## 4. Confusion Matrix
 
-> 이 시스템은 LLM 안전 문제를 해결한다.
+Confusion matrix는 분류 결과를 네 가지로 나눠 보여준다.
 
-그 표현은 과장입니다.
+- True Negative: benign을 benign으로 맞춤
+- False Positive: benign을 harmful로 잘못 막음
+- False Negative: harmful을 benign으로 통과시킴
+- True Positive: harmful을 harmful로 맞춤
+
+이 프로젝트에서는 특히 False Negative가 중요하다. harmful-style 요청을 benign으로 통과시키는 경우이기 때문이다. 보고서에서는 이것을 false allow라고 부른다.
+
+## 5. 결과 해석 기준
+
+현재 결과만 보면 Naive Bayes와 Logistic Regression이 rule-based보다 훨씬 좋아 보인다.
+
+하지만 이 결론은 조심해야 한다.
+
+이 데이터셋은 실제 사용자 로그가 아니라 직접 만든 synthetic/sanitized 데이터다. 따라서 모델이 실제 위험 의도를 깊게 이해했다기보다, 작성된 데이터의 반복 패턴을 잘 학습했을 수 있다.
+
+정확한 해석은 다음 정도가 적절하다.
+
+> 단순 규칙 기반 방식은 표현 변화에 취약했고, character n-gram 기반 ML baseline은 현재 synthetic 데이터셋에서 더 높은 recall을 보였다. 하지만 실제 LLM 안전성을 주장하려면 외부 benchmark, 실제 응답 평가, 라벨링 기준 검증이 추가로 필요하다.

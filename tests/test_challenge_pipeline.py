@@ -5,7 +5,7 @@ import unittest
 sys.path.append(str(Path(__file__).resolve().parents[1] / "src"))
 
 from build_challenge_dataset import make_rows
-from evaluate_challenge import evaluate_ml_on_challenge
+from evaluate_challenge import evaluate_logistic_regression_on_challenge, evaluate_ml_on_challenge
 from evaluate_guardrail import evaluate
 from ml_baseline import load_rows
 
@@ -27,11 +27,14 @@ class ChallengePipelineTest(unittest.TestCase):
 
         rule_result = evaluate(challenge_rows)
         ml_result = evaluate_ml_on_challenge(train_rows, challenge_rows)
+        logistic_result = evaluate_logistic_regression_on_challenge(train_rows, challenge_rows)
 
         self.assertEqual(rule_result["summary"]["total"], 80)
         self.assertEqual(ml_result["summary"]["total"], 80)
+        self.assertEqual(logistic_result["summary"]["total"], 80)
         self.assertIn("accuracy", rule_result["summary"])
         self.assertIn("accuracy", ml_result["summary"])
+        self.assertIn("accuracy", logistic_result["summary"])
 
 
 if __name__ == "__main__":

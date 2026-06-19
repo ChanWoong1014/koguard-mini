@@ -113,7 +113,8 @@ def build_report(
             "The goal is not to train a new LLM, but to build an interpretable evaluation "
             "pipeline for checking whether prompts look benign or adversarial.",
             "## 2. Research Question\n\n"
-            "Can a simple rule-based guardrail detect sanitized English and Korean bypass-style prompts?",
+            "Can simple baselines detect sanitized English and Korean bypass-style prompts, and how much does "
+            "a learned TF-IDF model improve over a hand-written rule-based guardrail?",
             "## 3. Dataset Summary\n\n"
             f"- Total rows: {dataset_summary['total']}\n"
             f"- Average prompt length: {dataset_summary['average_prompt_length']}\n"
@@ -135,7 +136,8 @@ def build_report(
             "## 7. Visual Summary\n\n"
             "![Accuracy by Language](chart_accuracy_by_language.svg)\n\n"
             "![False Allow Rate by Attack Type](chart_false_allow_by_attack_type.svg)\n\n"
-            "![Dataset Rows by Attack Type](chart_dataset_by_attack_type.svg)",
+            "![Dataset Rows by Attack Type](chart_dataset_by_attack_type.svg)\n\n"
+            "![TF-IDF Logistic Regression Confusion Matrix](chart_confusion_matrix_logistic.svg)",
             "## 8. Grouped Results\n\n"
             + grouped_result_table("By Language", results["by_language"])
             + "\n\n"
@@ -144,21 +146,20 @@ def build_report(
             "## 10. Interpretation\n\n"
             "The rule-based baseline is interpretable but brittle. It performs best when prompts contain explicit "
             "keywords that match the written rules, but it misses many paraphrased harmful-style prompts. "
-            "The character n-gram Naive Bayes baseline improves harmful recall on this sanitized dataset, but this "
-            "should not be interpreted as production-level safety. Incorrect predictions are useful because they show "
-            "where simple pattern matching and simple ML both have limits.",
+            "The character n-gram Naive Bayes and TF-IDF logistic regression baselines improve harmful recall on this "
+            "sanitized dataset, but this should not be interpreted as production-level safety. Incorrect predictions "
+            "are useful because they show where simple pattern matching and simple ML both have limits.",
             "## 11. Limitations\n\n"
-            "- The dataset is useful for learning and experimentation but still small for research.\n"
+            "- The dataset is useful for learning and experimentation but still synthetic and small for research.\n"
             "- Labels are manually assigned.\n"
             "- The guardrail uses simple text patterns, so it is brittle.\n"
-            "- The Naive Bayes baseline is simple and may overfit synthetic wording patterns.\n"
+            "- The Naive Bayes and logistic regression baselines may overfit synthetic wording patterns.\n"
             "- The project currently evaluates prompts only, not actual LLM responses.\n"
             "- The published dataset avoids detailed harmful instructions, so it is safer but less realistic.",
             "## 12. Next Steps\n\n"
-            "- Expand the dataset beyond 200 rows with more realistic but still safe paraphrases.\n"
-            "- Add more Korean paraphrases that do not use obvious keywords.\n"
-            "- Add response-level labeling: safe refusal, partial compliance, unsafe compliance.\n"
-            "- Compare additional ML baselines such as logistic regression or TF-IDF classifiers.\n"
+            "- Add more human-written Korean paraphrases that do not use obvious keywords.\n"
+            "- Collect actual LLM responses only after defining a safe response-level evaluation protocol.\n"
+            "- Compare against public safety benchmarks after redacting unsafe details.\n"
             "- Convert this Markdown draft into a concise PDF experiment report.",
         ]
     )

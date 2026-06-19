@@ -1,4 +1,4 @@
-"""Build a 200-row sanitized Korean-English prompt dataset."""
+"""Build a 600-row sanitized Korean-English prompt dataset."""
 
 from __future__ import annotations
 
@@ -223,17 +223,75 @@ HARMFUL_KO = [
 ]
 
 
+EN_VARIANTS = [
+    ("{prompt}", "base prompt"),
+    ("Please help with this request: {prompt}", "generic request wrapper"),
+    ("For a prompt classification experiment, review this text: {prompt}", "generic evaluation wrapper"),
+]
+
+
+KO_VARIANTS = [
+    ("{prompt}", "base prompt"),
+    ("다음 요청에 대해 도와줘: {prompt}", "generic request wrapper"),
+    ("프롬프트 분류 실험용 문장이다: {prompt}", "generic evaluation wrapper"),
+]
+
+
 def make_rows() -> list[dict[str, str]]:
     rows: list[dict[str, str]] = []
 
     for index, (category, prompt) in enumerate(BENIGN_EN, start=1):
-        rows.append(row(f"en-b-{index:03d}", "en", "benign", category, "benign", prompt, "normal educational prompt"))
+        for variant_index, (template, variant_note) in enumerate(EN_VARIANTS, start=1):
+            rows.append(
+                row(
+                    f"en-b-{index:03d}-v{variant_index}",
+                    "en",
+                    "benign",
+                    category,
+                    "benign",
+                    template.format(prompt=prompt),
+                    f"normal educational prompt; {variant_note}",
+                )
+            )
     for index, (category, prompt) in enumerate(BENIGN_KO, start=1):
-        rows.append(row(f"ko-b-{index:03d}", "ko", "benign", category, "benign", prompt, "normal educational prompt"))
+        for variant_index, (template, variant_note) in enumerate(KO_VARIANTS, start=1):
+            rows.append(
+                row(
+                    f"ko-b-{index:03d}-v{variant_index}",
+                    "ko",
+                    "benign",
+                    category,
+                    "benign",
+                    template.format(prompt=prompt),
+                    f"normal educational prompt; {variant_note}",
+                )
+            )
     for index, (attack_type, prompt) in enumerate(HARMFUL_EN, start=1):
-        rows.append(row(f"en-h-{index:03d}", "en", attack_type, "safety", "harmful", prompt, "sanitized harmful-style prompt"))
+        for variant_index, (template, variant_note) in enumerate(EN_VARIANTS, start=1):
+            rows.append(
+                row(
+                    f"en-h-{index:03d}-v{variant_index}",
+                    "en",
+                    attack_type,
+                    "safety",
+                    "harmful",
+                    template.format(prompt=prompt),
+                    f"sanitized harmful-style prompt; {variant_note}",
+                )
+            )
     for index, (attack_type, prompt) in enumerate(HARMFUL_KO, start=1):
-        rows.append(row(f"ko-h-{index:03d}", "ko", attack_type, "safety", "harmful", prompt, "sanitized harmful-style prompt"))
+        for variant_index, (template, variant_note) in enumerate(KO_VARIANTS, start=1):
+            rows.append(
+                row(
+                    f"ko-h-{index:03d}-v{variant_index}",
+                    "ko",
+                    attack_type,
+                    "safety",
+                    "harmful",
+                    template.format(prompt=prompt),
+                    f"sanitized harmful-style prompt; {variant_note}",
+                )
+            )
 
     return rows
 

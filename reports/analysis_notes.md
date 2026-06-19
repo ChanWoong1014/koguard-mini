@@ -1,37 +1,35 @@
-# Current Analysis Notes
+# KoGuard-Mini Analysis Notes
 
-## Dataset Snapshot
+## Current Snapshot
 
-- Extended dataset: `data/prompts_extended.csv`
-- Extended rows: 200
-- Challenge dataset: `data/prompts_challenge.csv`
-- Challenge rows: 80
-- Extended dataset validation errors: 0
+- Main dataset rows: 600
+- Challenge dataset rows: 80
+- Languages: English and Korean
+- Labels: benign and harmful-style
+- Baselines: rule-based guardrail, character n-gram Naive Bayes, TF-IDF Logistic Regression
 
-## Main Algorithm Comparison
+## Main Result
 
-| Algorithm | Accuracy | Harmful Precision | Harmful Recall | Harmful F1 | False Allow | False Refusal |
-|---|---:|---:|---:|---:|---:|---:|
-| rule-based guardrail | 0.79 | 1.0 | 0.58 | 0.7342 | 0.42 | 0.0 |
-| char n-gram Naive Bayes | 0.99 | 0.9804 | 1.0 | 0.9901 | 0.0 | 0.02 |
+The rule-based guardrail is explainable but brittle. On the 600-row main dataset, it keeps false refusal at 0.0 but misses 42% of harmful-style prompts.
 
-## Challenge Set Comparison
+The character n-gram Naive Bayes baseline performs best on the current synthetic dataset. It reaches perfect scores on the main dataset and remains strong on the challenge set, but this should not be interpreted as production-grade safety.
 
-| Algorithm | Accuracy | Harmful Precision | Harmful Recall | Harmful F1 | False Allow | False Refusal |
-|---|---:|---:|---:|---:|---:|---:|
-| rule-based guardrail | 0.4875 | 0.4286 | 0.075 | 0.1277 | 0.925 | 0.1 |
-| char n-gram Naive Bayes | 0.9875 | 0.9756 | 1.0 | 0.9877 | 0.0 | 0.025 |
+The TF-IDF Logistic Regression baseline also performs strongly after threshold tuning. It has 0.0 false allow on both the main dataset and challenge set, but it still has some false refusals.
 
-## Interpretation
+## Challenge Set
 
-The rule-based guardrail is highly explainable but brittle. On the challenge set, it over-blocks some benign safety discussion prompts and misses many harmful-style prompts with less direct wording.
+The challenge set exposes the weakness of the rule-based approach. The rule-based harmful recall drops to 0.075, with a false allow rate of 0.925.
 
-The character n-gram Naive Bayes baseline performs much better, including on the challenge set. However, this should still be treated as a small-scale learning experiment because both datasets are synthetic and sanitized.
+This supports the main project lesson:
+
+> Simple keyword rules are easy to explain, but they are fragile when wording changes.
 
 ## Important Caveat
 
-Do not claim that this is a production safety system.
+The dataset is synthetic and sanitized. The strong ML baseline results may come from repeated wording patterns rather than deep understanding of unsafe intent.
 
-A realistic claim:
+The project should be described as a learning and evaluation pipeline, not as a deployable LLM security system.
 
-> I built a Korean-English LLM prompt safety evaluation pipeline with a 200-row extended dataset and an 80-row challenge set. I compared an interpretable rule-based guardrail with a character n-gram Naive Bayes baseline, then analyzed false allows, false refusals, and generalization behavior.
+## Short Project Summary
+
+I built a Korean-English LLM prompt safety evaluation pipeline with a 600-row synthetic prompt dataset and an 80-row challenge set. I compared an interpretable rule-based guardrail with character n-gram Naive Bayes and TF-IDF Logistic Regression baselines, then analyzed false allows, false refusals, confusion matrices, and challenge-set generalization behavior.
