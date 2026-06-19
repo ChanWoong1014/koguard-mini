@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import time
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -21,6 +22,7 @@ from collect_openai_responses import (
 
 
 GEMINI_ENDPOINT_TEMPLATE = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
+RETRYABLE_HTTP_STATUS_CODES = {429, 500, 502, 503, 504}
 
 
 def normalize_model_id(model: str) -> str:
@@ -70,6 +72,11 @@ def request_response(api_key: str, model: str, prompt: str, timeout_seconds: int
     return extract_output_text(payload)
 
 
+def retry_delay_seconds(attempt_number: int, base_delay_seconds: float) -> float:
+    """Return bounded exponential backoff delay for a transient API failure."""
+    return min(base_delay_seconds * (2**attempt_number), 30.0)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Collect local response-level evaluation data through the Gemini API.")
     parser.add_argument("--input", required=True, help="Pilot CSV created by prepare_response_pilot.py")
@@ -78,6 +85,8 @@ def main() -> None:
     parser.add_argument("--env-file", default=".env", help="Local .env file that stores GEMINI_API_KEY")
     parser.add_argument("--api-key-env", default="GEMINI_API_KEY", help="Environment variable name for the API key")
     parser.add_argument("--timeout-seconds", type=int, default=60)
+    parser.add_argument("--max-retries", type=int, default=3, help="Retries for HTTP 429/5xx transient failures")
+    parser.add_argument("--retry-delay-seconds", type=float, default=2.0, help="Initial retry delay; doubles after each retry")
     parser.add_argument("--limit", type=int, help="Optional number of currently empty rows to collect")
     parser.add_argument("--max-requests", type=int, default=0, help="Must be at least the planned request count")
     parser.add_argument("--confirm-model-calls", action="store_true", help="Required before model calls are sent")
@@ -109,16 +118,30 @@ def main() -> None:
         raise SystemExit(
             f"--max-requests ({args.max_requests}) is lower than the planned request count ({len(pending_indexes)})."
         )
+    if args.max_retries < 0:
+        raise SystemExit("--max-retries cannot be negative.")
+    if args.retry_delay_seconds <= 0:
+        raise SystemExit("--retry-delay-seconds must be greater than 0.")
 
     api_key = api_key_from_environment(args.api_key_env, Path(args.env_file))
     for position, row_index in enumerate(pending_indexes, start=1):
         row = rows[row_index]
-        try:
-            response_text = request_response(api_key, args.model, row["prompt_text"], args.timeout_seconds)
-        except HTTPError as exc:
-            raise SystemExit(f"Gemini API request failed with HTTP {exc.code} at prompt_id={row['prompt_id']}.") from exc
-        except URLError as exc:
-            raise SystemExit(f"Gemini network request failed at prompt_id={row['prompt_id']}: {exc.reason}") from exc
+        for attempt_number in range(args.max_retries + 1):
+            try:
+                response_text = request_response(api_key, args.model, row["prompt_text"], args.timeout_seconds)
+                break
+            except HTTPError as exc:
+                if exc.code in RETRYABLE_HTTP_STATUS_CODES and attempt_number < args.max_retries:
+                    delay = retry_delay_seconds(attempt_number, args.retry_delay_seconds)
+                    print(
+                        f"Transient HTTP {exc.code} at prompt_id={row['prompt_id']}; "
+                        f"retrying in {delay:g} seconds ({attempt_number + 1}/{args.max_retries})."
+                    )
+                    time.sleep(delay)
+                    continue
+                raise SystemExit(f"Gemini API request failed with HTTP {exc.code} at prompt_id={row['prompt_id']}.") from exc
+            except URLError as exc:
+                raise SystemExit(f"Gemini network request failed at prompt_id={row['prompt_id']}: {exc.reason}") from exc
 
         row["model_name"] = normalize_model_id(args.model)
         row["response_text"] = response_text

@@ -107,6 +107,8 @@ python src\collect_gemini_responses.py --input data\response_evaluations\pilot_2
 
 성공하면 `Collected 1/2`, `Collected 2/2`가 출력된다. `data/response_evaluations/gemini_pilot_20.csv`를 열어 두 행에 `model_name`, `response_text`가 채워졌는지 확인한다.
 
+일시적인 `HTTP 429` 또는 `HTTP 5xx` 오류는 기본적으로 최대 3번 자동 재시도한다. 자동 재시도 후에도 실패하면 그 행에서 중단되지만, 이미 수집된 행은 파일에 저장돼 있으므로 같은 명령을 다시 실행하면 빈 행만 이어서 수집한다.
+
 오류가 나면 API 키는 절대 보내지 말고, `HTTP 400`, `HTTP 401`, `HTTP 403`, `HTTP 429` 같은 상태 코드와 오류 메시지만 공유한다. 키 권한, 프로젝트 설정, API 사용 한도, 모델 ID 중 무엇이 원인인지 추가 확인이 필요하다.
 
 ## 8. 나머지 18건 이어서 수집

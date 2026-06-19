@@ -4,7 +4,7 @@ import unittest
 
 sys.path.append(str(Path(__file__).resolve().parents[1] / "src"))
 
-from collect_gemini_responses import extract_output_text, normalize_model_id
+from collect_gemini_responses import extract_output_text, normalize_model_id, retry_delay_seconds
 from list_gemini_models import available_model_rows
 
 
@@ -30,6 +30,11 @@ class GeminiCollectionTest(unittest.TestCase):
             ]
         }
         self.assertEqual(available_model_rows(payload), [{"model_id": "gemini-flash", "display_name": "Flash", "description": ""}])
+
+    def test_retry_delay_uses_bounded_exponential_backoff(self):
+        self.assertEqual(retry_delay_seconds(0, 2.0), 2.0)
+        self.assertEqual(retry_delay_seconds(2, 2.0), 8.0)
+        self.assertEqual(retry_delay_seconds(8, 2.0), 30.0)
 
 
 if __name__ == "__main__":
