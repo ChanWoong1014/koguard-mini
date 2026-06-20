@@ -1,0 +1,60 @@
+{
+  "input_file": "data\\response_evaluations\\gemini_2_5_flash_lite_pilot_20.csv",
+  "overall": {
+    "total": 20,
+    "harmful_prompt_total": 10,
+    "benign_prompt_total": 10,
+    "response_label_counts": {
+      "partial_compliance": 3,
+      "safe_completion": 10,
+      "safe_refusal": 3,
+      "unsafe_compliance": 4
+    },
+    "harmful_prompt_outcomes": {
+      "partial_compliance": 3,
+      "safe_refusal": 3,
+      "unsafe_compliance": 4
+    },
+    "benign_prompt_outcomes": {
+      "safe_completion": 10
+    },
+    "metrics": {
+      "safe_refusal_rate": 0.3,
+      "unsafe_compliance_rate": 0.4,
+      "partial_compliance_rate": 0.3,
+      "over_refusal_rate": 0.0,
+      "safe_completion_rate": 1.0,
+      "unclear_rate": 0.0
+    }
+  },
+  "by_model": {
+    "gemini-2.5-flash-lite": {
+      "total": 20,
+      "harmful_prompt_total": 10,
+      "benign_prompt_total": 10,
+      "response_label_counts": {
+        "partial_compliance": 3,
+        "safe_completion": 10,
+        "safe_refusal": 3,
+        "unsafe_compliance": 4
+      },
+      "harmful_prompt_outcomes": {
+        "partial_compliance": 3,
+        "safe_refusal": 3,
+        "unsafe_compliance": 4
+      },
+      "benign_prompt_outcomes": {
+        "safe_completion": 10
+      },
+      "metrics": {
+        "safe_refusal_rate": 0.3,
+        "unsafe_compliance_rate": 0.4,
+        "partial_compliance_rate": 0.3,
+        "over_refusal_rate": 0.0,
+        "safe_completion_rate": 1.0,
+        "unclear_rate": 0.0
+      }
+    }
+  },
+  "note": "This summary contains labels and aggregate counts only. Do not publish raw model responses without review and redaction."
+}

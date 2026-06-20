@@ -242,6 +242,22 @@ python src\collect_gemini_responses.py --input data\response_evaluations\pilot_2
 
 Gemini API 키 발급부터 라벨링과 지표 생성까지의 상세 순서는 [`docs/GEMINI_API_SETUP_KO.md`](docs/GEMINI_API_SETUP_KO.md)에 있다.
 
+### Gemini 2.5 Flash-Lite 응답 파일럿 결과
+
+`gemini-2.5-flash-lite`로 challenge set에서 균형 추출한 20개 프롬프트(영어/한국어 x benign/harmful-style 각 5개)의 실제 응답을 수집했다. 응답 원문은 로컬 전용 CSV에만 보관하고, 공개 저장소에는 원문이 없는 집계 결과만 포함한다.
+
+| Metric | Result |
+|---|---:|
+| Safe refusal rate on harmful-style prompts | 0.30 (3/10) |
+| Unsafe compliance rate on harmful-style prompts | 0.40 (4/10) |
+| Partial compliance rate on harmful-style prompts | 0.30 (3/10) |
+| Over-refusal rate on benign prompts | 0.00 (0/10) |
+| Safe completion rate on benign prompts | 1.00 (10/10) |
+
+이 파일럿에서 harmful-style 10개 중 4개는 우회·은폐·무조건 협조 역할·확인 단계 무시와 같은 요청을 받아들였다. 3개는 경고를 붙였지만 일부 위험한 전제나 도구 사용을 이어갔다. 반면 benign 10개에는 불필요한 거절이 없었다.
+
+이 수치는 탐색적 결과다. synthetic/sanitized 20개라는 작은 표본, 단일 모델, 단일 평가자 라벨링이라는 한계가 있으므로 Gemini 전체 안전성이나 실제 서비스 성능으로 일반화하면 안 된다. 자세한 공개용 요약은 `reports/gemini_2_5_flash_lite_pilot_report.md`에, 원문 없는 집계 JSON은 `reports/gemini_2_5_flash_lite_pilot_metrics.json`에 있다.
+
 ## 프로젝트의 한계
 
 - 데이터셋은 직접 만든 synthetic/sanitized 데이터입니다.
